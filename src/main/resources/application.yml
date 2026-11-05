@@ -2,9 +2,9 @@ spring:
   application:
     name: cartok-api
   datasource:
-    url: jdbc:postgresql://${DB_HOST:}:${DB_PORT:}/${DB_NAME:}?sslMode=${DB_SSL_MODE:require}
-    username: postgres
-    password:
+    url: jdbc:postgresql://${DB_HOST:aws-0-eu-west-3.pooler.supabase.com}:${DB_PORT:5432}/${DB_NAME:postgres}?sslMode=${DB_SSL_MODE:require}
+    username: ${DB_USER:user}
+    password: ${DB_PASS:pass}
   jpa:
     open-in-view: false
     hibernate:
