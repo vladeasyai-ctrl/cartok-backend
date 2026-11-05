@@ -19,13 +19,12 @@ FROM eclipse-temurin:21-jre-alpine AS runtime
 
 WORKDIR /app
 
-RUN addgroup -S vault \
-    && adduser -S vault -G vault
+RUN addgroup -S cartok \
+    && adduser -S cartok -G cartok
 
-COPY --from=build /workspace/target/document-vault-*.jar app.jar
-RUN chown vault:vault app.jar
+COPY --from=build --chown=cartok:cartok /workspace/target/cartok-api-*.jar app.jar
 
-USER vault
+USER cartok
 
 # Cloud Run injects PORT; tune heap for container memory limits.
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
