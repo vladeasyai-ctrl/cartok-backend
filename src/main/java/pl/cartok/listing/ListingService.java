@@ -2,9 +2,11 @@ package pl.cartok.listing;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -70,11 +72,36 @@ public class ListingService {
 
 	@Transactional(readOnly = true)
 	public List<ListingView> feed(int limit) {
-		PageRequest page = PageRequest.of(0, limit, Sort.by(
+		return listings.findByStatus("active", feedPage(limit)).stream().map(ListingService::toView).toList();
+	}
+
+	/**
+	 * Непросмотренные идут первыми. Виденные не выкидываются, а добивают ленту до limit
+	 * в порядке просмотра, чтобы при коротком каталоге она не опустела.
+	 */
+	@Transactional(readOnly = true)
+	public List<ListingView> feed(int limit, List<String> seenIds) {
+		if (seenIds.isEmpty()) return feed(limit);
+		List<ListingView> result = new ArrayList<>(limit);
+		listings.findByStatusAndIdNotIn("active", seenIds, feedPage(limit)).stream()
+				.map(ListingService::toView)
+				.forEach(result::add);
+		if (result.size() >= limit) return result;
+		Map<String, ListingEntity> seen = listings.findByStatusAndIdIn("active", seenIds).stream()
+				.collect(Collectors.toMap(ListingEntity::getId, Function.identity()));
+		for (String id : seenIds) {
+			if (result.size() >= limit) break;
+			ListingEntity entity = seen.get(id);
+			if (entity != null) result.add(toView(entity));
+		}
+		return result;
+	}
+
+	private static PageRequest feedPage(int limit) {
+		return PageRequest.of(0, limit, Sort.by(
 				Sort.Order.desc("publishedAt").with(Sort.NullHandling.NULLS_LAST),
 				Sort.Order.desc("id")
 		));
-		return listings.findByStatus("active", page).stream().map(ListingService::toView).toList();
 	}
 
 	@Transactional(readOnly = true)

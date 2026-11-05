@@ -1,5 +1,6 @@
 package pl.cartok.listing;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,12 @@ public interface ListingRepository extends JpaRepository<ListingEntity, String> 
 
 	@EntityGraph(attributePaths = "photos")
 	List<ListingEntity> findByStatus(String status, Pageable pageable);
+
+	@EntityGraph(attributePaths = "photos")
+	List<ListingEntity> findByStatusAndIdNotIn(String status, Collection<String> ids, Pageable pageable);
+
+	@EntityGraph(attributePaths = "photos")
+	List<ListingEntity> findByStatusAndIdIn(String status, Collection<String> ids);
 
 	@EntityGraph(attributePaths = "photos")
 	Optional<ListingEntity> findByIdAndStatus(String id, String status);
