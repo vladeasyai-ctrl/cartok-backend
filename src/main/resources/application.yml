@@ -1,0 +1,29 @@
+spring:
+  application:
+    name: cartok-api
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:}:${DB_PORT:}/${DB_NAME:}?sslMode=${DB_SSL_MODE:require}
+    username: postgres
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+
+cartok:
+  otomoto:
+    base-url: https://www.otomoto.pl
+    makes: ${OTOMOTO_MAKES:audi,bmw,ford,volkswagen,mercedes-benz,opel,toyota,skoda,renault,peugeot,hyundai,kia,volvo,nissan,mazda,seat,fiat,honda,citroen,porsche,lexus,acura}
+    user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+  ingest:
+    enabled: ${INGEST_ENABLED:true}
+    min-delay: ${INGEST_MIN_DELAY:3m}
+    max-delay: ${INGEST_MAX_DELAY:5m}
+    token: ${INGEST_TOKEN:}
+
+server:
+  port: 8080

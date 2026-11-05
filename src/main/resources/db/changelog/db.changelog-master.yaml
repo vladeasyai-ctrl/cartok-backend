@@ -1,0 +1,173 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-listings
+      author: cartok
+      changes:
+        - createTable:
+            tableName: listing
+            columns:
+              - column:
+                  name: id
+                  type: text
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: source
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: external_id
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: title
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: make
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: year
+                  type: integer
+              - column:
+                  name: price_amount
+                  type: integer
+              - column:
+                  name: currency
+                  type: text
+                  defaultValue: PLN
+                  constraints:
+                    nullable: false
+              - column:
+                  name: mileage_km
+                  type: integer
+              - column:
+                  name: fuel
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: transmission
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: location
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seller_id
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seller_name
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seller_kind
+                  type: text
+                  defaultValue: private
+                  constraints:
+                    nullable: false
+              - column:
+                  name: search_slug
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: source_url
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: text
+                  defaultValue: active
+                  constraints:
+                    nullable: false
+              - column:
+                  name: published_at
+                  type: timestamptz
+              - column:
+                  name: last_seen_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: listing
+            columnNames: source, external_id
+            constraintName: listing_source_external_id_key
+        - createIndex:
+            tableName: listing
+            indexName: listing_feed_idx
+            columns:
+              - column:
+                  name: status
+              - column:
+                  name: published_at
+                  descending: true
+        - createTable:
+            tableName: listing_photo
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: listing_id
+                  type: text
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_listing_photo_listing
+                    references: listing(id)
+                    deleteCascade: true
+              - column:
+                  name: position
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_id
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: url
+                  type: text
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: listing_photo
+            columnNames: listing_id, position
+            constraintName: listing_photo_listing_position_key
