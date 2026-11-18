@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import org.hibernate.annotations.BatchSize;
 import java.util.List;
 
 @Entity
@@ -71,6 +72,12 @@ public class ListingEntity {
 	@Column(name = "search_slug", nullable = false)
 	private String searchSlug = "";
 
+	@Column(name = "make_slug", nullable = false)
+	private String makeSlug = "";
+
+	@Column(name = "model_slug", nullable = false)
+	private String modelSlug = "";
+
 	@Column(name = "source_url", nullable = false)
 	private String sourceUrl;
 
@@ -83,7 +90,12 @@ public class ListingEntity {
 	@Column(name = "last_seen_at", nullable = false)
 	private OffsetDateTime lastSeenAt;
 
+	/** Страница объявления уже снята. Карточка только из поиска ещё ждёт подробностей. */
+	@Column(nullable = false)
+	private boolean detailed = true;
+
 	@OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
+	@BatchSize(size = 50)
 	private List<ListingPhotoEntity> photos = new ArrayList<>();
 
 	public String getId() {
@@ -230,6 +242,22 @@ public class ListingEntity {
 		this.searchSlug = searchSlug;
 	}
 
+	public String getMakeSlug() {
+		return makeSlug;
+	}
+
+	public void setMakeSlug(String makeSlug) {
+		this.makeSlug = makeSlug;
+	}
+
+	public String getModelSlug() {
+		return modelSlug;
+	}
+
+	public void setModelSlug(String modelSlug) {
+		this.modelSlug = modelSlug;
+	}
+
 	public String getSourceUrl() {
 		return sourceUrl;
 	}
@@ -260,6 +288,14 @@ public class ListingEntity {
 
 	public void setLastSeenAt(OffsetDateTime lastSeenAt) {
 		this.lastSeenAt = lastSeenAt;
+	}
+
+	public boolean isDetailed() {
+		return detailed;
+	}
+
+	public void setDetailed(boolean detailed) {
+		this.detailed = detailed;
 	}
 
 	public List<ListingPhotoEntity> getPhotos() {

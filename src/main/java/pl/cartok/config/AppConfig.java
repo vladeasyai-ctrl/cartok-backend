@@ -10,6 +10,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.support.RestClientAdapter;
 import org.springframework.web.service.invoker.HttpServiceProxyFactory;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import pl.cartok.ingest.OtomotoApi;
 
@@ -36,14 +37,20 @@ public class AppConfig {
 	}
 
 	@Bean
-	WebMvcConfigurer corsConfigurer() {
+	WebMvcConfigurer webConfigurer(CartokProperties properties) {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(CorsRegistry registry) {
 				registry.addMapping("/api/**")
 						.allowedOrigins("http://localhost:3000")
-						.allowedMethods("GET", "POST", "OPTIONS")
+						.allowedMethods("GET", "POST", "PUT", "OPTIONS")
 						.allowedHeaders("*");
+			}
+
+			@Override
+			public void addInterceptors(InterceptorRegistry registry) {
+				registry.addInterceptor(new ServiceTokenInterceptor(properties.serviceToken()))
+						.addPathPatterns("/api/users", "/api/users/**");
 			}
 		};
 	}

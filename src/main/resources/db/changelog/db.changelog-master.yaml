@@ -171,3 +171,378 @@ databaseChangeLog:
             tableName: listing_photo
             columnNames: listing_id, position
             constraintName: listing_photo_listing_position_key
+  - changeSet:
+      id: 002-users
+      author: cartok
+      changes:
+        - createTable:
+            tableName: app_user
+            columns:
+              - column:
+                  name: id
+                  type: text
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: email
+                  type: text
+                  constraints:
+                    nullable: false
+                    unique: true
+                    uniqueConstraintName: app_user_email_key
+              - column:
+                  name: name
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: password_hash
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: 003-preferences
+      author: cartok
+      changes:
+        - createTable:
+            tableName: user_preference
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: text
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_preference_user
+                    references: app_user(id)
+                    deleteCascade: true
+              - column:
+                  name: priority
+                  type: integer
+                  constraints:
+                    nullable: false
+              - column:
+                  name: make
+                  type: text
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: user_preference
+            columnNames: user_id, make, model
+            constraintName: user_preference_user_make_model_key
+        - createTable:
+            tableName: user_feed_filter
+            columns:
+              - column:
+                  name: user_id
+                  type: text
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+                    foreignKeyName: fk_user_feed_filter_user
+                    references: app_user(id)
+                    deleteCascade: true
+              - column:
+                  name: fuels
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: year_from
+                  type: integer
+              - column:
+                  name: year_to
+                  type: integer
+              - column:
+                  name: mileage_from
+                  type: integer
+              - column:
+                  name: mileage_to
+                  type: integer
+  - changeSet:
+      id: 004-interactions
+      author: cartok
+      changes:
+        - createTable:
+            tableName: listing_interaction
+            columns:
+              - column:
+                  name: user_id
+                  type: text
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_listing_interaction_user
+                    references: app_user(id)
+                    deleteCascade: true
+              - column:
+                  name: listing_id
+                  type: text
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_listing_interaction_listing
+                    references: listing(id)
+                    deleteCascade: true
+              - column:
+                  name: first_event_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_event_at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: seen_at
+                  type: timestamptz
+              - column:
+                  name: views
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: dwell_ms
+                  type: bigint
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: opens
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: liked_at
+                  type: timestamptz
+        - addPrimaryKey:
+            tableName: listing_interaction
+            columnNames: user_id, listing_id
+            constraintName: listing_interaction_pkey
+        - createIndex:
+            tableName: listing_interaction
+            indexName: listing_interaction_user_seen_idx
+            columns:
+              - column:
+                  name: user_id
+              - column:
+                  name: seen_at
+        - createIndex:
+            tableName: listing_interaction
+            indexName: listing_interaction_listing_idx
+            columns:
+              - column:
+                  name: listing_id
+  - changeSet:
+      id: 005-scrape-planner
+      author: cartok
+      changes:
+        - addColumn:
+            tableName: listing
+            columns:
+              - column:
+                  name: make_slug
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+              - column:
+                  name: model_slug
+                  type: text
+                  defaultValue: ""
+                  constraints:
+                    nullable: false
+        - createTable:
+            tableName: scrape_query
+            columns:
+              - column:
+                  name: query_key
+                  type: text
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: next_page
+                  type: integer
+                  defaultValueNumeric: 1
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_run_at
+                  type: timestamptz
+              - column:
+                  name: last_saved
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_total
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: failures
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+              - column:
+                  name: resting_until
+                  type: timestamptz
+  - changeSet:
+      id: 006-google-auth
+      author: cartok
+      changes:
+        - dropNotNullConstraint:
+            tableName: app_user
+            columnName: password_hash
+            columnDataType: text
+        - addColumn:
+            tableName: app_user
+            columns:
+              - column:
+                  name: google_sub
+                  type: text
+        - addUniqueConstraint:
+            tableName: app_user
+            columnNames: google_sub
+            constraintName: app_user_google_sub_key
+  - changeSet:
+      id: 007-ingest-budget
+      author: cartok
+      changes:
+        - addColumn:
+            tableName: listing
+            columns:
+              - column:
+                  name: first_seen_at
+                  type: timestamptz
+        - createTable:
+            tableName: ops
+            columns:
+              - column:
+                  name: id
+                  type: integer
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: scrape_enabled
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+              - column:
+                  name: run_count
+                  type: integer
+                  defaultValueNumeric: 0
+                  constraints:
+                    nullable: false
+        - insert:
+            tableName: ops
+            columns:
+              - column:
+                  name: id
+                  valueNumeric: 1
+              - column:
+                  name: scrape_enabled
+                  valueBoolean: true
+              - column:
+                  name: run_count
+                  valueNumeric: 0
+        - createTable:
+            tableName: otomoto_request
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: kind
+                  type: text
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: otomoto_request
+            indexName: otomoto_request_at_idx
+            columns:
+              - column:
+                  name: at
+        - createTable:
+            tableName: scrape_save
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: at
+                  type: timestamptz
+                  constraints:
+                    nullable: false
+              - column:
+                  name: listing_id
+                  type: text
+                  constraints:
+                    nullable: false
+        - createIndex:
+            tableName: scrape_save
+            indexName: scrape_save_at_idx
+            columns:
+              - column:
+                  name: at
+  - changeSet:
+      id: 008-preference-demand
+      author: cartok
+      changes:
+        - dropTable:
+            tableName: user_feed_filter
+        - addColumn:
+            tableName: listing
+            columns:
+              - column:
+                  name: detailed
+                  type: boolean
+                  defaultValueBoolean: true
+                  constraints:
+                    nullable: false
+        - createView:
+            viewName: preference_demand
+            replaceIfExists: true
+            selectQuery: >
+              select lower(make) as make, lower(model) as model,
+              sum(case priority when 1 then 6 when 2 then 3 else 1 end) as weight
+              from user_preference group by 1, 2

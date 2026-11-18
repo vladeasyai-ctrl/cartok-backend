@@ -21,9 +21,14 @@ cartok:
     user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
   ingest:
     enabled: ${INGEST_ENABLED:true}
-    min-delay: ${INGEST_MIN_DELAY:3m}
-    max-delay: ${INGEST_MAX_DELAY:5m}
+    interval: ${INGEST_INTERVAL:5m}
+    offers-per-run: ${INGEST_OFFERS_PER_RUN:10}
+    offer-pause-min: ${INGEST_OFFER_PAUSE_MIN:2s}
+    offer-pause-max: ${INGEST_OFFER_PAUSE_MAX:3s}
+    explore-every: ${INGEST_EXPLORE_EVERY:5}
     token: ${INGEST_TOKEN:}
+    url: ${INGEST_URL:}
+  service-token: ${SERVICE_TOKEN:}
 
 server:
   port: 8080

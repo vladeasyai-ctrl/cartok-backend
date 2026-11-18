@@ -48,6 +48,8 @@ public class OtomotoParser {
 				text(advert, "title"),
 				label(specs, "make"),
 				label(specs, "model"),
+				slug(specs, "make"),
+				slug(specs, "model"),
 				year(specs.get("year")),
 				money(advert.path("price")),
 				currency(advert.path("price")),
@@ -79,6 +81,8 @@ public class OtomotoParser {
 				text(node, "title"),
 				label(specs, "make"),
 				label(specs, "model"),
+				slug(specs, "make"),
+				slug(specs, "model"),
 				year(specs.get("year")),
 				money(node.path("price")),
 				currency(node.path("price")),
@@ -178,6 +182,11 @@ public class OtomotoParser {
 		Spec spec = specs.get(key);
 		if (spec == null) return "";
 		return spec.label.isBlank() ? spec.value : spec.label;
+	}
+
+	private static String slug(Map<String, Spec> specs, String key) {
+		Spec spec = specs.get(key);
+		return spec == null ? "" : spec.value.trim().toLowerCase(Locale.ROOT);
 	}
 
 	private static Integer year(Spec spec) {

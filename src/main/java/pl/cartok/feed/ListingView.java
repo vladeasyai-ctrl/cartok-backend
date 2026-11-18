@@ -18,7 +18,8 @@ public record ListingView(
 		String description,
 		List<String> images,
 		SellerView seller,
-		Instant createdAt
+		Instant createdAt,
+		boolean liked
 ) {
 
 	public record SellerView(String id, String name, String kind) {

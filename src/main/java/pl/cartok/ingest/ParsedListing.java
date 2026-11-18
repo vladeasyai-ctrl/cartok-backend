@@ -3,11 +3,14 @@ package pl.cartok.ingest;
 import java.time.Instant;
 import java.util.List;
 
+/** make/model — подписи для людей (BMW, Seria 3), makeSlug/modelSlug — как в адресе поиска otomoto (bmw, seria-3). */
 public record ParsedListing(
 		String externalId,
 		String title,
 		String make,
 		String model,
+		String makeSlug,
+		String modelSlug,
 		Integer year,
 		Integer priceAmount,
 		String currency,
@@ -36,8 +39,9 @@ public record ParsedListing(
 	public ParsedListing fillMake(String slug) {
 		if (make != null && !make.isBlank()) return this;
 		return new ParsedListing(
-				externalId, title, slug, model, year, priceAmount, currency, mileageKm, fuel, transmission,
-				location, description, sellerId, sellerName, sellerKind, sourceUrl, publishedAt, status, photos
+				externalId, title, slug, model, prefer(makeSlug, slug), modelSlug, year, priceAmount, currency, mileageKm,
+				fuel, transmission, location, description, sellerId, sellerName, sellerKind, sourceUrl, publishedAt,
+				status, photos
 		);
 	}
 
@@ -47,6 +51,8 @@ public record ParsedListing(
 				prefer(details.title, title),
 				prefer(details.make, make),
 				prefer(details.model, model),
+				prefer(details.makeSlug, makeSlug),
+				prefer(details.modelSlug, modelSlug),
 				prefer(details.year, year),
 				details.priceAmount != null && details.priceAmount > 0 ? details.priceAmount : priceAmount,
 				prefer(details.currency, currency),

@@ -15,12 +15,14 @@ import pl.cartok.listing.ListingService;
 public class ListingController {
 
 	private static final Pattern SEEN_ID = Pattern.compile("^[A-Za-z0-9_-]{1,80}$");
-	private static final int SEEN_LIMIT = 50;
+	private static final int SEEN_LIMIT = 80;
 
 	private final ListingService listings;
+	private final FeedService feed;
 
-	public ListingController(ListingService listings) {
+	public ListingController(ListingService listings, FeedService feed) {
 		this.listings = listings;
+		this.feed = feed;
 	}
 
 	@GetMapping("/api/listings")
@@ -33,7 +35,17 @@ public class ListingController {
 			@RequestParam(defaultValue = "30") int limit,
 			@RequestParam(required = false) String seen
 	) {
-		return Map.of("listings", listings.feed(pageSize(limit), seenIds(seen)));
+		return Map.of("listings", feed.anonymous(pageSize(limit), seenIds(seen)));
+	}
+
+	/** Лента по предпочтениям пользователя; путь под X-Service-Token, чтобы нельзя было подсмотреть чужие. */
+	@GetMapping("/api/users/{id}/feed")
+	public Map<String, Object> personalFeed(
+			@PathVariable String id,
+			@RequestParam(defaultValue = "30") int limit,
+			@RequestParam(required = false) String seen
+	) {
+		return Map.of("listings", feed.personal(id, pageSize(limit), seenIds(seen)));
 	}
 
 	@GetMapping("/api/listings/{id}")

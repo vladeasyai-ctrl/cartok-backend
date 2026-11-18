@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
+import org.springframework.web.server.ResponseStatusException;
 import pl.cartok.config.CartokProperties;
 
 @Configuration
@@ -16,6 +17,8 @@ import pl.cartok.config.CartokProperties;
 public class IngestScheduler implements SchedulingConfigurer {
 
 	private static final Logger log = LoggerFactory.getLogger(IngestScheduler.class);
+	/** Небольшой разброс, чтобы обращения не шли ровно по часам. */
+	private static final long MAX_JITTER_MS = 30_000;
 
 	private final IngestService ingest;
 	private final CartokProperties.Ingest settings;
@@ -30,22 +33,22 @@ public class IngestScheduler implements SchedulingConfigurer {
 		if (!settings.enabled()) return;
 		registrar.addTriggerTask(this::run, context -> {
 			Instant last = context.lastCompletion();
-			return last == null ? Instant.now() : last.plus(randomDelay());
+			return last == null ? Instant.now() : last.plus(nextDelay());
 		});
 	}
 
 	private void run() {
 		try {
 			IngestService.Report report = ingest.ingestNext();
-			log.info("Плановый сбор Otomoto {}: сохранено {}", report.make(), report.saved());
+			log.info("Плановый сбор «{}»: сохранено {}", report.query(), report.saved());
+		} catch (ResponseStatusException error) {
+			log.info("Плановый сбор пропущен: {}", error.getReason());
 		} catch (RuntimeException error) {
-			log.warn("Плановый сбор Otomoto не завершился: {}", error.toString());
+			log.warn("Плановый сбор otomoto не завершился: {}", error.toString());
 		}
 	}
 
-	private Duration randomDelay() {
-		long min = settings.minDelay().toMillis();
-		long max = Math.max(settings.maxDelay().toMillis(), min);
-		return Duration.ofMillis(ThreadLocalRandom.current().nextLong(min, max + 1));
+	private Duration nextDelay() {
+		return settings.interval().plusMillis(ThreadLocalRandom.current().nextLong(MAX_JITTER_MS + 1));
 	}
 }
